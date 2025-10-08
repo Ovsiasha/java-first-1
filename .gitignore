@@ -19,6 +19,15 @@
 *.tar.gz
 *.rar
 
+# Папка с настройками IntelliJ IDEA
+.idea/
+
+# Файлы проекта IntelliJ IDEA
+*.iml
+
+# Кэш и временные файлы
+out/
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
