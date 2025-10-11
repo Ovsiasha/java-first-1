@@ -5,5 +5,6 @@ public class Main {
         System.out.println("Проверка прошла успешно!");
         System.out.println("Проверка прошла успешно!");        System.out.println("Проверка прошла успешно!");
         System.out.println("Проверка прошла успешно!");        System.out.println("Проверка прошла успешно!");
+        System.out.println("pacani!!!");
     }
 }
