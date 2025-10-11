@@ -3,6 +3,6 @@ public class Main {
         // Весь код, который вы хотите запустить, пишется здесь!
         System.out.println("Проверка прошла успешно!");
         System.out.println("Проверка прошла успешно!");
-        System.out.println("Салам все ворам, АУЕ!!!");
+        System.out.println("Проверка прошла успешно!");        System.out.println("Проверка прошла успешно!");
     }
 }
