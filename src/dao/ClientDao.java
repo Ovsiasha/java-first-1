@@ -11,29 +11,29 @@ import java.util.List;
 public class ClientDao {
     private static final ClientDao INSTANCE = new ClientDao();
     private static final String FIND_BY_SQL = """
-            SELECT id, full_name, birth_date, email, student.admission_year
-            FROM student
+            SELECT id, name, email, phone 
+            FROM client
             WHERE id = ?;
             """;
     private static final String FIND_ALL_SQl = """
-            SELECT id, full_name, birth_date, email, admission_year
-            FROM student;
+            SELECT id, name, email, phone 
+            FROM client;
             """;
     private static final String SAVE_SQL = """
-            INSERT INTO student(full_name, birth_date, email, admission_year)
-            VALUES (?, ?, ?, ?)
-            RETURNING id, full_name, birth_date, email, admission_year;
+            INSERT INTO client( name, email, phone )
+            VALUES (?, ?, ?)
+            RETURNING id, name, email, phone;
             """;
     private static final String DELETE_SQL = """
-            DELETE FROM student
+            DELETE FROM client
             WHERE id = ?
-            RETURNING id, full_name, birth_date, email, admission_year;
+            RETURNING id, name, email, phone ;
             """;
     private static final String UPDATE_SQL = """
-            UPDATE student
-            SET full_name = ?, birth_date = ?, email = ?, admission_year = ?
+            UPDATE client
+            SET name = ?, email = ?, phone = ? 
             WHERE id = ?
-            RETURNING id, full_name, birth_date, email, admission_year;
+            RETURNING id, name, email, phone ;
             """;
 
 
@@ -65,7 +65,7 @@ public class ClientDao {
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if(resultSet.next()){
-                return buildStudent(resultSet);
+                return buildClient(resultSet);
             }
             return null;
         }catch(Exception e){
@@ -77,29 +77,29 @@ public class ClientDao {
         try(Connection connection = ConnectionManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQl)){
 
-            List<Client> students = new ArrayList<>();
+            List<Client> clients = new ArrayList<>();
             ResultSet resultSet = preparedStatement.executeQuery();
             while(resultSet.next()){
-                students.add(buildStudent(resultSet));
+                clients.add(buildClient(resultSet));
             }
-            return students;
+            return clients;
         }catch (SQLException e){
             throw new DaoException(e);
         }
     }
 
-    public Client updateStudent(int id, Client student) {
+    public Client updateClient(int id, Client student) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
 
             preparedStatement.setString(1, student.getName());
-            preparedStatement.setString(3, student.getEmail());
+            preparedStatement.setString(2, student.getEmail());
             preparedStatement.setString(3, student.getPhone());
-            preparedStatement.setInt(5, id);
+            preparedStatement.setInt(4, id);
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                return buildStudent(resultSet);
+                return buildClient(resultSet);
             }
             return null;
         } catch (SQLException e) {
@@ -115,7 +115,7 @@ public class ClientDao {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if(resultSet.next()){
-                return buildStudent(resultSet);
+                return buildClient(resultSet);
             }
             return null;
         }catch(SQLException e){
@@ -123,7 +123,7 @@ public class ClientDao {
         }
     }
 
-    private Client buildStudent(ResultSet resultSet) throws SQLException {
+    private Client buildClient(ResultSet resultSet) throws SQLException {
         return new Client(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
