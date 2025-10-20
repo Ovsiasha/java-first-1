@@ -9,128 +9,150 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientDao {
+    // Singleton
     private static final ClientDao INSTANCE = new ClientDao();
+
+    // SQL-запросы
     private static final String FIND_BY_SQL = """
-            SELECT id, name, email, phone 
-            FROM client
+            SELECT id, name, email, phone
+            FROM clients
             WHERE id = ?;
             """;
-    private static final String FIND_ALL_SQl = """
-            SELECT id, name, email, phone 
-            FROM client;
+
+    private static final String FIND_ALL_SQL = """
+            SELECT id, name, email, phone
+            FROM clients;
             """;
+
     private static final String SAVE_SQL = """
-            INSERT INTO client( name, email, phone )
-            VALUES (?, ?, ?)
-            RETURNING id, name, email, phone;
+            INSERT INTO clients (name, email, phone)
+            VALUES (?, ?, ?);
             """;
+
     private static final String DELETE_SQL = """
-            DELETE FROM client
-            WHERE id = ?
-            RETURNING id, name, email, phone ;
+            DELETE FROM clients
+            WHERE id = ?;
             """;
+
     private static final String UPDATE_SQL = """
-            UPDATE client
-            SET name = ?, email = ?, phone = ? 
-            WHERE id = ?
-            RETURNING id, name, email, phone ;
+            UPDATE clients
+            SET name = ?, email = ?, phone = ?
+            WHERE id = ?;
             """;
 
+    private ClientDao() {
+    }
 
+    // ✅ Добавление клиента
     public Client save(Client client) {
-        try(Connection connection = ConnectionManager.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(
+                     SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setString(1, client.getName());
             preparedStatement.setString(2, client.getEmail());
             preparedStatement.setString(3, client.getPhone());
 
-            preparedStatement.executeUpdate();
-
-            ResultSet resultSet = preparedStatement.getGeneratedKeys();
-
-            if(resultSet.next()) {
-                client.setId(resultSet.getInt(1));
+            int rows = preparedStatement.executeUpdate();
+            if (rows == 0) {
+                throw new DaoException("Ошибка при удалении клиента по ID", new SQLException("Failed to save client"));
             }
+
+            try (ResultSet keys = preparedStatement.getGeneratedKeys()) {
+                if (keys.next()) {
+                    client.setId(keys.getInt(1));
+                }
+            }
+
             return client;
-        }catch (SQLException e){
-            throw new DaoException(e);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DaoException("Ошибка при сохранении клиента", e);
         }
     }
 
-    public  Client findById(int id) {
-        try(Connection connection = ConnectionManager.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_SQL)){
+    // ✅ Поиск клиента по ID
+    public Client findById(int id) {
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_SQL)) {
 
             preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()){
-                return buildClient(resultSet);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return buildClient(resultSet);
+                }
             }
+
             return null;
-        }catch(Exception e){
-            throw new DaoException(e);
+        } catch (SQLException e) {
+            throw new DaoException("Ошибка при поиске клиента по ID", e);
         }
     }
 
+    // ✅ Получение всех клиентов
     public List<Client> findAll() {
-        try(Connection connection = ConnectionManager.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQl)){
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
 
             List<Client> clients = new ArrayList<>();
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while(resultSet.next()){
+
+            while (resultSet.next()) {
                 clients.add(buildClient(resultSet));
             }
+
             return clients;
-        }catch (SQLException e){
-            throw new DaoException(e);
+
+        } catch (SQLException e) {
+            throw new DaoException("Ошибка при получении списка клиентов", e);
         }
     }
 
-    public Client updateClient(int id, Client student) {
+    // ✅ Обновление клиента — возвращает true/false
+    public boolean update(int id, Client client) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
 
-            preparedStatement.setString(1, student.getName());
-            preparedStatement.setString(2, student.getEmail());
-            preparedStatement.setString(3, student.getPhone());
+            preparedStatement.setString(1, client.getName());
+            preparedStatement.setString(2, client.getEmail());
+            preparedStatement.setString(3, client.getPhone());
             preparedStatement.setInt(4, id);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return buildClient(resultSet);
-            }
-            return null;
+            int rows = preparedStatement.executeUpdate();
+            return rows > 0; // true, если обновилась хотя бы одна строка
+
         } catch (SQLException e) {
-            throw new DaoException(e);
+            throw new DaoException("Ошибка при обновлении клиента", e);
         }
     }
 
-    public Client deleteById(int id) {
-        try(Connection connection = ConnectionManager.getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)){
+    // ✅ Удаление клиента — возвращает true/false
+    public boolean deleteById(int id) {
+        try (Connection connection = ConnectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
 
             preparedStatement.setInt(1, id);
 
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if(resultSet.next()){
-                return buildClient(resultSet);
-            }
-            return null;
-        }catch(SQLException e){
-            throw new DaoException(e);
+            int rows = preparedStatement.executeUpdate();
+            return rows > 0; // true, если удалена хотя бы одна строка
+
+        } catch (SQLException e) {
+            throw new DaoException("Ошибка при удалении клиента по ID", e);
         }
     }
 
+    // ✅ Преобразование ResultSet → Client
     private Client buildClient(ResultSet resultSet) throws SQLException {
-        return new Client(
-                resultSet.getInt("id"),
-                resultSet.getString("name"),
-                resultSet.getString("email"),
-                resultSet.getString("phone"));
+        return new Client()
+                .setId(resultSet.getInt("id"))
+                .setName(resultSet.getString("name"))
+                .setEmail(resultSet.getString("email"))
+                .setPhone(resultSet.getString("phone"));
     }
 
+    // ✅ Геттер для единственного экземпляра DAO
     public static ClientDao getInstance() {
         return INSTANCE;
     }

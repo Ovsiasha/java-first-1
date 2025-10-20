@@ -1,7 +1,7 @@
-import static init.Start.init;
+import static init.Start.startMenu;
 
 public class Main {
     public static void main(String[] args) {
-        init();
+        startMenu();
     }
 }
