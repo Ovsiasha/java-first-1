@@ -1,6 +1,6 @@
 package dao;
 
-import entity.Client;
+import entity.Product;
 import exception.DaoException;
 import util.ConnectionManager;
 
@@ -8,72 +8,67 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClientDao {
-    // Singleton
-    private static final ClientDao INSTANCE = new ClientDao();
+public class ProductDao {
+    private static final ProductDao INSTANCE = new ProductDao();
 
-    // SQL-запросы
     private static final String FIND_BY_SQL = """
-            SELECT id, name, email, phone
-            FROM clients
+            SELECT id, name, price, quantity
+            FROM products
             WHERE id = ?;
             """;
 
     private static final String FIND_ALL_SQL = """
-            SELECT id, name, email, phone
-            FROM clients;
+            SELECT id, name, price, quantity
+            FROM products;
             """;
 
     private static final String SAVE_SQL = """
-            INSERT INTO clients (name, email, phone)
+            INSERT INTO products (name, price, quantity)
             VALUES (?, ?, ?);
             """;
 
     private static final String DELETE_SQL = """
-            DELETE FROM clients
+            DELETE FROM products
             WHERE id = ?;
             """;
 
     private static final String UPDATE_SQL = """
-            UPDATE clients
-            SET name = ?, email = ?, phone = ?
+            UPDATE products
+            SET name = ?, price = ?, quantity = ?
             WHERE id = ?;
             """;
 
-    private ClientDao() {
+    private ProductDao() {
     }
 
-    // ✅ Добавление клиента
-    public Client saveClient(Client client) {
+    public Product saveProduct(Product product) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getEmail());
-            preparedStatement.setString(3, client.getPhone());
+            preparedStatement.setString(1, product.getName());
+            preparedStatement.setInt(2, product.getPrice());
+            preparedStatement.setInt(3, product.getQuantity());
 
             int rows = preparedStatement.executeUpdate();
             if (rows == 0) {
-                throw new DaoException("Ошибка при сохранениии клиента", new SQLException("Failed to save client"));
+                throw new DaoException("Ошибка при сохранение продукта", new SQLException("Failed to save product"));
             }
 
             try (ResultSet keys = preparedStatement.getGeneratedKeys()) {
                 if (keys.next()) {
-                    client.setId(keys.getInt(1));
+                    product.setId(keys.getInt(1));
                 }
             }
 
-            return client;
+            return product;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            throw new DaoException("Ошибка при сохранении клиента", e);
+            throw new DaoException("Ошибка при сохранении продукта", e);
         }
     }
 
-    // ✅ Поиск клиента по ID
-    public Client findByIdClient(int id) {
+    public Product findByIdProduct(int id) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_SQL)) {
 
@@ -81,55 +76,52 @@ public class ClientDao {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return buildClient(resultSet);
+                    return buildProduct(resultSet);
                 }
             }
 
             return null;
         } catch (SQLException e) {
-            throw new DaoException("Ошибка при поиске клиента по ID", e);
+            throw new DaoException("Ошибка при поиске продукта по ID", e);
         }
     }
 
-    // ✅ Получение всех клиентов
-    public List<Client> findAllClients() {
+    public List<Product> findAllProducts() {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
-            List<Client> clients = new ArrayList<>();
+            List<Product> products = new ArrayList<>();
 
             while (resultSet.next()) {
-                clients.add(buildClient(resultSet));
+                products.add(buildProduct(resultSet));
             }
 
-            return clients;
+            return products;
 
         } catch (SQLException e) {
-            throw new DaoException("Ошибка при получении списка клиентов", e);
+            throw new DaoException("Ошибка при получении списка продуктов", e);
         }
     }
 
-    // ✅ Обновление клиента — возвращает true/false
-    public boolean updateClient(int id, Client client) {
+    public boolean updateProduct(int id, Product product) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
 
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getEmail());
-            preparedStatement.setString(3, client.getPhone());
+            preparedStatement.setString(1, product.getName());
+            preparedStatement.setInt(2, product.getPrice());
+            preparedStatement.setInt(3, product.getQuantity());
             preparedStatement.setInt(4, id);
 
             int rows = preparedStatement.executeUpdate();
             return rows > 0; // true, если обновилась хотя бы одна строка
 
         } catch (SQLException e) {
-            throw new DaoException("Ошибка при обновлении клиента", e);
+            throw new DaoException("Ошибка при обновлении продукта", e);
         }
     }
 
-    // ✅ Удаление клиента — возвращает true/false
-    public boolean deleteByIdClient(int id) {
+    public boolean deleteByIdProduct(int id) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_SQL)) {
 
@@ -139,21 +131,19 @@ public class ClientDao {
             return rows > 0; // true, если удалена хотя бы одна строка
 
         } catch (SQLException e) {
-            throw new DaoException("Ошибка при удалении клиента по ID", e);
+            throw new DaoException("Ошибка при удалении продукта по ID", e);
         }
     }
 
-    // ✅ Преобразование ResultSet → Client
-    private Client buildClient(ResultSet resultSet) throws SQLException {
-        return new Client()
+    private Product buildProduct(ResultSet resultSet) throws SQLException {
+        return new Product()
                 .setId(resultSet.getInt("id"))
                 .setName(resultSet.getString("name"))
-                .setEmail(resultSet.getString("email"))
-                .setPhone(resultSet.getString("phone"));
+                .setPrice(resultSet.getInt("price"))
+                .setQuantity(resultSet.getInt("quantity"));
     }
 
-    // ✅ Геттер для единственного экземпляра DAO
-    public static ClientDao getInstance() {
+    public static ProductDao getInstance() {
         return INSTANCE;
     }
 }
