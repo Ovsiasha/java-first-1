@@ -49,12 +49,12 @@ public class ClientMenu {
         System.out.println("Введите телефон:");
         String phone = sc.nextLine();
 
-        Client newClient = new Client()
+        Client newClients = new Client()
                 .setName(name)
                 .setEmail(email)
                 .setPhone(phone);
 
-        clientDao.saveClient(newClient);
+        clientDao.saveClient(newClients);
         System.out.println("Клиент успешно добавлен!");
         pauseAndReturn();
         clients();
@@ -79,10 +79,10 @@ public class ClientMenu {
         System.out.print("Введите ID клиента: ");
         int id = safeIntInput();
 
-        Client client = clientDao.findByIdClient(id);
-        if (client != null) {
+        Client clients = clientDao.findByIdClient(id);
+        if (clients != null) {
             System.out.println("Найден клиент:");
-            System.out.println(client);
+            System.out.println(clients);
         } else {
             System.out.println("Клиент с таким ID не найден.");
         }

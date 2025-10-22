@@ -13,6 +13,11 @@ public class ClientDao {
     private static final ClientDao INSTANCE = new ClientDao();
 
     // SQL-запросы
+    private static final String SAVE_SQL = """
+            INSERT INTO clients (name, email, phone)
+            VALUES (?, ?, ?);
+            """;
+
     private static final String FIND_BY_SQL = """
             SELECT id, name, email, phone
             FROM clients
@@ -24,9 +29,10 @@ public class ClientDao {
             FROM clients;
             """;
 
-    private static final String SAVE_SQL = """
-            INSERT INTO clients (name, email, phone)
-            VALUES (?, ?, ?);
+    private static final String UPDATE_SQL = """
+            UPDATE clients
+            SET name = ?, email = ?, phone = ?
+            WHERE id = ?;
             """;
 
     private static final String DELETE_SQL = """
@@ -34,24 +40,18 @@ public class ClientDao {
             WHERE id = ?;
             """;
 
-    private static final String UPDATE_SQL = """
-            UPDATE clients
-            SET name = ?, email = ?, phone = ?
-            WHERE id = ?;
-            """;
-
     private ClientDao() {
     }
 
     // ✅ Добавление клиента
-    public Client saveClient(Client client) {
+    public Client saveClient(Client clients) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(
                      SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getEmail());
-            preparedStatement.setString(3, client.getPhone());
+            preparedStatement.setString(1, clients.getName());
+            preparedStatement.setString(2, clients.getEmail());
+            preparedStatement.setString(3, clients.getPhone());
 
             int rows = preparedStatement.executeUpdate();
             if (rows == 0) {
@@ -60,14 +60,13 @@ public class ClientDao {
 
             try (ResultSet keys = preparedStatement.getGeneratedKeys()) {
                 if (keys.next()) {
-                    client.setId(keys.getInt(1));
+                    clients.setId(keys.getInt(1));
                 }
             }
 
-            return client;
+            return clients;
 
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DaoException("Ошибка при сохранении клиента", e);
         }
     }
@@ -111,13 +110,13 @@ public class ClientDao {
     }
 
     // ✅ Обновление клиента — возвращает true/false
-    public boolean updateClient(int id, Client client) {
+    public boolean updateClient(int id, Client clients) {
         try (Connection connection = ConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)) {
 
-            preparedStatement.setString(1, client.getName());
-            preparedStatement.setString(2, client.getEmail());
-            preparedStatement.setString(3, client.getPhone());
+            preparedStatement.setString(1, clients.getName());
+            preparedStatement.setString(2, clients.getEmail());
+            preparedStatement.setString(3, clients.getPhone());
             preparedStatement.setInt(4, id);
 
             int rows = preparedStatement.executeUpdate();
