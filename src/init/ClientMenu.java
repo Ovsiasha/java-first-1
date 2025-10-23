@@ -6,7 +6,7 @@ import java.util.List;
 import static init.Start.*;
 
 public class ClientMenu {
-    private static final ClientDao clientDao =ClientDao.getInstance();
+    private static final ClientDao clientDao = ClientDao.getInstance();
 
     protected static void clients() {
         cls();
@@ -49,19 +49,19 @@ public class ClientMenu {
         System.out.println("Введите телефон:");
         String phone = sc.nextLine();
 
-        Client newClient = new Client()
+        Client newClients = new Client()
                 .setName(name)
                 .setEmail(email)
                 .setPhone(phone);
 
-        clientDao.save(newClient);
+        clientDao.saveClient(newClients);
         System.out.println("Клиент успешно добавлен!");
         pauseAndReturn();
         clients();
     }
 
     private static void showAllClients() {
-        List<Client> clients = clientDao.findAll();
+        List<Client> clients = clientDao.findAllClients();
         if (clients.isEmpty()) {
             System.out.println("Нет клиентов в базе.");
         } else {
@@ -79,10 +79,10 @@ public class ClientMenu {
         System.out.print("Введите ID клиента: ");
         int id = safeIntInput();
 
-        Client client = clientDao.findById(id);
-        if (client != null) {
+        Client clients = clientDao.findByIdClient(id);
+        if (clients != null) {
             System.out.println("Найден клиент:");
-            System.out.println(client);
+            System.out.println(clients);
         } else {
             System.out.println("Клиент с таким ID не найден.");
         }
@@ -94,7 +94,7 @@ public class ClientMenu {
         System.out.print("Введите ID клиента для изменения: ");
         int id = safeIntInput();
 
-        Client existing = clientDao.findById(id);
+        Client existing = clientDao.findByIdClient(id);
         if (existing == null) {
             System.out.println("Клиент с таким ID не найден.");
             pauseAndReturn();
@@ -116,7 +116,7 @@ public class ClientMenu {
                 .setEmail(email.isEmpty() ? existing.getEmail() : email)
                 .setPhone(phone.isEmpty() ? existing.getPhone() : phone);
 
-        boolean updatedOk = clientDao.update(id, updated);
+        boolean updatedOk = clientDao.updateClient(id, updated);
         if (updatedOk) {
             System.out.println("Данные клиента обновлены!");
         } else {
@@ -131,7 +131,7 @@ public class ClientMenu {
         System.out.print("Введите ID клиента для удаления: ");
         int id = safeIntInput();
 
-        boolean deleted = clientDao.deleteById(id);
+        boolean deleted = clientDao.deleteByIdClient(id);
         if (deleted) {
             System.out.println("Клиент успешно удалён!");
         } else {

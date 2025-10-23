@@ -1,9 +1,7 @@
 package init;
 
-import dao.ClientDao;
-import entity.Client;
+import dao.ProductDao;
 
-import java.util.List;
 import java.util.Scanner;
 
 import static init.ClientMenu.clients;
@@ -14,7 +12,7 @@ import static init.ReportMenu.reports;
 public class Start {
 
     protected static final Scanner sc = new Scanner(System.in);
-    private static final ClientDao clientDao = ClientDao.getInstance();
+    private static final ProductDao clientDao = ProductDao.getInstance();
     ClientMenu clientMenu = new ClientMenu();
 
     public static void startMenu() {
