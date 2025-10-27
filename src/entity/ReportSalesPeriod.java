@@ -2,25 +2,25 @@ package entity;
 
 import java.time.LocalDate;
 
-public class SalesReport {
+public class ReportSalesPeriod {
     private LocalDate date;
     private String clientName;
     private int totalAmount;
 
-    public SalesReport(LocalDate date, String clientName, int totalAmount) {
+    public ReportSalesPeriod(LocalDate date, String clientName, int totalAmount) {
         this.date = date;
         this.clientName = clientName;
         this.totalAmount = totalAmount;
     }
 
-    public SalesReport() {
+    public ReportSalesPeriod() {
     }
 
     public LocalDate getDate() {
         return date;
     }
 
-    public SalesReport setDate(LocalDate date) {
+    public ReportSalesPeriod setDate(LocalDate date) {
         this.date = date;
         return this;
     }
@@ -29,7 +29,7 @@ public class SalesReport {
         return clientName;
     }
 
-    public SalesReport setClientName(String clientName) {
+    public ReportSalesPeriod setClientName(String clientName) {
         this.clientName = clientName;
         return this;
     }
@@ -38,7 +38,7 @@ public class SalesReport {
         return totalAmount;
     }
 
-    public SalesReport setTotalAmount(int totalAmount) {
+    public ReportSalesPeriod setTotalAmount(int totalAmount) {
         this.totalAmount = totalAmount;
         return this;
     }

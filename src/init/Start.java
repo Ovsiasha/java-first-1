@@ -51,10 +51,6 @@ public class Start {
         sc.nextLine();
     }
 
-    protected static void cls() {
-        System.out.println("\n\n\n\n\n\n\n\n\n\n");
-    }
-
     protected static int safeIntInput() {
         while (true) {
             try {
@@ -63,6 +59,10 @@ public class Start {
                 System.out.println("Ошибка ввода. Введите число:");
             }
         }
+    }
+
+    protected static void cls() {
+        System.out.println("\n\n\n\n\n\n\n\n\n\n");
     }
 
 }
