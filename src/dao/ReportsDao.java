@@ -1,9 +1,6 @@
 package dao;
 
-import entity.ActiveClients;
-import entity.MonthlyIncome;
-import entity.PopularProducts;
-import entity.ReportSalesPeriod;
+import entity.*;
 import exception.DaoException;
 import util.ConnectionManager;
 
@@ -15,6 +12,17 @@ import java.util.List;
 public class ReportsDao {
     private static final ReportsDao INSTANCE = new ReportsDao();
 
+    private static final String GENERAL_STATISTICS_SQL = """           
+            SELECT
+               COUNT(DISTINCT c.id) AS client_num,
+               COUNT(DISTINCT o.id) AS order_num,
+               SUM(oi.quantity) AS products_num,
+               SUM(oi.total) AS sales_num,
+               (SUM(oi.total) / COUNT(DISTINCT o.id)) AS average_bill
+           FROM clients c
+           JOIN orders o ON c.id = o.client_id
+           JOIN order_items oi ON o.id = oi.order_id;
+           """;
     private static final String SALES_FOR_PERIOD_SQL = """
             SELECT orders.order_date, name, total
             FROM orders
@@ -51,6 +59,28 @@ public class ReportsDao {
             GROUP BY order_date
             ORDER BY order_date DESC
             """;
+
+    public GeneralStatistics getGeneralStatistics() {
+        try(Connection connection = ConnectionManager.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(GENERAL_STATISTICS_SQL)){
+
+            GeneralStatistics result = null;
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if(resultSet.next()) {
+                result = (new GeneralStatistics(
+                        resultSet.getInt("client_num"),
+                        resultSet.getInt("order_num"),
+                        resultSet.getInt("products_num"),
+                        resultSet.getInt("sales_num"),
+                        resultSet.getDouble("average_bill")
+                ));
+            }
+            return result;
+        } catch (Exception e) {
+            throw new DaoException(e);
+        }
+    }
 
     public List<ReportSalesPeriod> getSalesReport(LocalDate start, LocalDate end) {
         try(Connection connection = ConnectionManager.getConnection();
@@ -143,7 +173,11 @@ public class ReportsDao {
         }
     }
 
+
+
     public static ReportsDao getInstance() {
         return INSTANCE;
     }
+
+
 }
