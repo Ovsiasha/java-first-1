@@ -1,7 +1,5 @@
 package init;
 
-import dao.ProductDao;
-
 import java.util.Scanner;
 
 import static init.ClientMenu.clients;
@@ -12,8 +10,6 @@ import static init.ReportMenu.reports;
 public class Start {
 
     protected static final Scanner sc = new Scanner(System.in);
-    private static final ProductDao clientDao = ProductDao.getInstance();
-    ClientMenu clientMenu = new ClientMenu();
 
     public static void startMenu() {
         System.out.println("=====================");

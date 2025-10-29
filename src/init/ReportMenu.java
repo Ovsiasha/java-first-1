@@ -1,18 +1,13 @@
 package init;
 
 import dao.ReportsDao;
-import entity.ActiveClients;
-import entity.MonthlyIncome;
-import entity.PopularProducts;
-import entity.ReportSalesPeriod;
+import entity.*;
 
-import java.sql.SQLOutput;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
-import static init.ClientMenu.clients;
 import static init.Start.*;
 
 public class ReportMenu {
@@ -21,12 +16,11 @@ public class ReportMenu {
     protected static void reports() {
         cls();
         System.out.println("=== Отчеты ===");
-        System.out.println("1. Продажи за период");
-        System.out.println("2. Самые популярные товары");
-        System.out.println("3. Самые активные клиенты");
-        System.out.println("4. Доход за месяц");
-        System.out.println("5. Детализация по клиенту");
-        System.out.println("6. Остатки на складе");
+        System.out.println("1. Общая статистика");
+        System.out.println("2. Продажи за период");
+        System.out.println("3. Самые популярные товары");
+        System.out.println("4. Самые активные клиенты");
+        System.out.println("5. Доход за месяц");
         System.out.println("0. Назад");
         System.out.println("_____________________");
         System.out.print("Выберите пункт: ");
@@ -35,21 +29,35 @@ public class ReportMenu {
         int input = safeIntInput();
 
         switch (input) {
-            case 1 -> reportSalesForPeriod();
-            case 2 -> popularProductsReport();
-            case 3 -> activeClientsReport();
-            case 4 -> monthlyIncomeReport();
-            case 5 -> customerDetailsReport();
-            case 6 -> remainingStockReport();
+            case 1 -> generalStatistics();
+            case 2 -> reportSalesForPeriod();
+            case 3 -> popularProductsReport();
+            case 4 -> activeClientsReport();
+            case 5 -> monthlyIncomeReport();
             case 0 -> {
                 cls();
                 startMenu();
             }
             default -> {
                 System.out.println("Некорректный ввод!");
-                clients();
+                reports();
             }
         }
+    }
+
+    private static void generalStatistics() {
+        System.out.println("=== Общая статистика ===");
+        System.out.println("----------------------------------------------------");
+        GeneralStatistics gs = reportsDao.getGeneralStatistics();
+        System.out.println("Всего клиентов: " + gs.getTotalClients());
+        System.out.println("Всего заказов: " + gs.getTotalOrders());
+        System.out.println("Всего продано товаров: " + gs.getTotalProducts() +" шт");
+        System.out.println("Общая выручка: " + gs.getTotalSales() +  "₽");
+        System.out.println("Средний чек: " + gs.getAverageBill() + " ₽");
+        System.out.println("----------------------------------------------------");
+
+        pauseAndReturn();
+        reports();
     }
 
     private static void reportSalesForPeriod() {
@@ -79,11 +87,11 @@ public class ReportMenu {
                     reportSalesPeriod.getTotalAmount());
             sum += reportSalesPeriod.getTotalAmount();
         }
+        System.out.println("----------------------------------------------------");
         System.out.printf("ИТОГО: %d ₽%n", sum);
 
         pauseAndReturn();
         reports();
-
     }
 
     private static void popularProductsReport() {
@@ -114,7 +122,6 @@ public class ReportMenu {
 
         pauseAndReturn();
         reports();
-
     }
 
     private static void activeClientsReport() {
@@ -156,16 +163,8 @@ public class ReportMenu {
         }
         System.out.println("----------------------------------------------------");
         System.out.printf("ИТОГО: %d ₽%n", total);
+
         pauseAndReturn();
         reports();
-
     }
-
-    private static void customerDetailsReport() {
-
-    }
-
-    private static void remainingStockReport() {
-    }
-
 }
