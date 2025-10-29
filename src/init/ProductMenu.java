@@ -9,6 +9,7 @@ public class ProductMenu {
     private static final ProductDao productDao = ProductDao.getInstance();
 
     protected static void products() {
+
         cls();
         System.out.println("=== Продукты ===");
         System.out.println("1. Добавить продукт");
